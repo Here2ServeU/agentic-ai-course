@@ -1,0 +1,32 @@
+# Virtual environments — never push these. Anyone cloning makes their own.
+venv/
+.venv/
+env/
+
+# Secrets — never commit API keys
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+
+# Logs produced by the agents (Module 9 + 10)
+*.log
+agent_log_*.txt
+
+# RAG vector store (Module 6)
+chroma/
+.chroma/
+*.sqlite3
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
