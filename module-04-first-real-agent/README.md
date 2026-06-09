@@ -2,7 +2,7 @@
 
 **The breakthrough module.** By the end, your agent will think, act, and answer on its own.
 
-## A chatbot answers once. An agent runs until the job is done.
+## A chatbot answers once; an agent runs until the job is done
 
 Three things make something an agent:
 
@@ -15,26 +15,33 @@ Three things make something an agent:
 ```bash
 source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install openai duckduckgo-search
+export OPENAI_API_KEY='sk-...'
 ```
 
-## Lab
+## Lab — build it in two stages, type every line
 
-Type [`first_agent.py`](first_agent.py) yourself — **do not paste.** Build it in order:
-calculator first, run it, then add the web-search tool.
+- **Lab 4.1** — build [`first_agent.py`](first_agent.py): the calculator agent (Video 2).
 
-```bash
-python first_agent.py
-```
+  ```bash
+  python first_agent.py
+  ```
 
-Calculator-only expected output:
+  Expected output:
 
-```
-TOOL: calculate | RESULT: 260130
-754 shares of Apple stock at $345 each would be worth $260,130.
-```
+  ```text
+  TOOL: calculate | RESULT: 260130
+  754 shares of Apple stock at $345 each would be worth $260,130.
+  ```
 
-With both tools, the agent searches the web **first**, then calculates — in the right
-order, without you telling it to.
+- **Lab 4.2** — add the web search tool. The finished two-tool version is
+  [`first_agent_with_search.py`](first_agent_with_search.py). With both tools the agent
+  searches the web **first**, then calculates — in the right order, without you telling it to.
 
+  ```bash
+  python first_agent_with_search.py
+  ```
+
+> Type each version yourself; use these files only to compare after yours runs.
+>
 > The agent loop is `while True`. It runs until the AI makes no more tool calls.
 > The AI reads the full messages list — including every tool result — on every iteration.
