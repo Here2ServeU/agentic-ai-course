@@ -1,93 +1,41 @@
-# Module 5 · Multi-Step Goals — the agent from Module 4, now with a system prompt.
-# A system prompt makes the agent plan. The goal below needs several steps and
-# several tool calls — but it is ONE goal. TYPE THIS YOURSELF.
-#
-# Install:  pip install openai duckduckgo-search
-# Set key:  export OPENAI_API_KEY='sk-...'
+# Module 5 · memory_agent.py
+# Short-term memory: keep a list of all messages and send it every time.
+# Set key: export OPENAI_API_KEY='sk-...'
+# Run:     python memory_agent.py
 
 from openai import OpenAI
-import json
-from duckduckgo_search import DDGS
 
 client = OpenAI()
 
 
-def calculate(expression):
-    """Evaluates a math expression."""
-    return str(eval(expression))
-
-
-def search_web(query):
-    """Searches the web for current information."""
-    with DDGS() as ddgs:
-        results = list(ddgs.text(query, max_results=3))
-    return str(results)
-
-
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "calculate",
-            "description": "Evaluates a math expression.",
-            "parameters": {
-                "type": "object",
-                "properties": {"expression": {"type": "string"}},
-                "required": ["expression"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_web",
-            "description": "Searches the web for current information.",
-            "parameters": {
-                "type": "object",
-                "properties": {"query": {"type": "string"}},
-                "required": ["query"],
-            },
-        },
-    },
-]
-
-
-def run_agent(goal):
-    # The system prompt makes the agent break goals into steps and show its reasoning.
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are a helpful research agent. You break complex goals into "
-                "steps, use your tools systematically, and give clear final answers. "
-                "Always show your reasoning."
-            ),
-        },
-        {"role": "user", "content": goal},
-    ]
-    while True:
-        r = client.chat.completions.create(
-            model="gpt-4o", messages=messages, tools=tools
-        )
-        m = r.choices[0].message
-        if not m.tool_calls:
-            print(m.content)
-            return
-        messages.append(m)
-        for tc in m.tool_calls:
-            name = tc.function.name
-            args = json.loads(tc.function.arguments)
-            result = calculate(**args) if name == "calculate" else search_web(**args)
-            print(f"TOOL: {name} | RESULT: {str(result)[:80]}")
-            messages.append(
-                {"role": "tool", "tool_call_id": tc.id, "content": str(result)}
-            )
-
-
-if __name__ == "__main__":
-    run_agent(
-        "Search for the latest news about electric vehicles. "
-        "Then search for Tesla stock price. "
-        "Then calculate the value of 100 shares. "
-        "Finally, summarize everything in 3 bullet points."
+# ── The problem: no memory. Every call is isolated. ───────────────────
+def ask_no_memory(question):
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": question}]
     )
+    return response.choices[0].message.content
+
+
+print(ask_no_memory("My name is Emmanuel."))
+print(ask_no_memory("What is my name?"))
+
+
+# ── The fix: the full conversation history travels with every request. ─
+conversation_history = []
+
+
+def chat_with_memory(user_message):
+    conversation_history.append({"role": "user", "content": user_message})
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=conversation_history
+    )
+    ai_response = response.choices[0].message.content
+    conversation_history.append({"role": "assistant", "content": ai_response})
+    return ai_response
+
+
+print(chat_with_memory("My name is Emmanuel and I am building a fraud detection agent."))
+print(chat_with_memory("What am I building?"))
+print(chat_with_memory("What industry does that apply to?"))

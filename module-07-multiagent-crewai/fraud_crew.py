@@ -1,15 +1,13 @@
-# Module 7 · Customizing Your Crew for Your Domain
-# Same CrewAI structure as research_crew.py — but the roles, goals, and backstories
-# turn it into a fraud-investigation specialist team. That is all it takes.
-# TYPE THIS YOURSELF, then design your OWN domain crew.
-#
-# Install:  pip install crewai crewai-tools
-# Keys:     export OPENAI_API_KEY='sk-...'
-#           export SERPER_API_KEY='your-serper-key'
+# Module 7 · fraud_crew.py
+# Same structure as research_crew.py — only the roles, goals, and backstories change.
+# That is all it takes to turn a research crew into a domain specialist team.
+# Install: pip install crewai crewai-tools
 
 from crewai import Agent, Task, Crew, Process
 from crewai_tools import SerperDevTool
+import os
 
+os.environ['SERPER_API_KEY'] = 'your-serper-key'  # free at serper.dev
 search_tool = SerperDevTool()
 
 investigator = Agent(

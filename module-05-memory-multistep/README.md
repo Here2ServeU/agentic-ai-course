@@ -4,30 +4,56 @@
 
 ## The idea
 
-An agent without memory is like an assistant who forgets you the moment you stop talking.
+An agent without memory forgets you the moment you stop talking.
 
 - **Short-term memory** = the conversation history (what happened earlier in *this* chat).
 - **Long-term memory** = stored information that persists across conversations (Module 6).
 
-Today: short-term. The trick is simple — **keep a list of all messages and send the
-whole list every time.**
+The trick for short-term memory: **keep a list of all messages and send the whole list
+every time.**
 
 ## Install
 
 ```bash
 source venv/bin/activate      # Windows: venv\Scripts\activate
-pip install openai duckduckgo-search
+pip install openai
+export OPENAI_API_KEY='sk-...'
 ```
 
-## Lab
+## Lab 5.1 — Build the memory system
 
-1. Type and run [`memory_demo.py`](memory_demo.py) — see the agent forget, then remember.
-2. Type [`memory_agent.py`](memory_agent.py) — the Module 4 agent plus a system prompt that makes it plan a multi-step goal.
+Type [`memory_agent.py`](memory_agent.py) yourself and run it. Watch the agent forget,
+then remember.
 
 ```bash
-python memory_demo.py
 python memory_agent.py
 ```
 
+## Lab 5.2 — Add memory + planning to your Module 4 agent
+
+Open `first_agent.py` from Module 4 and add a system prompt at the top of `run_agent`:
+
+```python
+def run_agent(goal):
+    messages = [
+        {"role": "system", "content": "You are a helpful research agent. "
+            "You break complex goals into steps, use your tools systematically, "
+            "and give clear final answers. Always show your reasoning."},
+        {"role": "user", "content": goal}
+    ]
+    # ... rest of the loop is unchanged ...
+```
+
+Then run a multi-step goal:
+
+```python
+run_agent(
+    "Search for the latest news about electric vehicles. "
+    "Then search for Tesla stock price. "
+    "Then calculate the value of 100 shares. "
+    "Finally, summarize everything in 3 bullet points."
+)
+```
+
 Watch the agent search, process results, calculate, then summarize — multiple steps,
-multiple tool calls, **one goal**. Compare with the reference files only after yours run.
+multiple tool calls, **one goal**.
