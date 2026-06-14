@@ -16,7 +16,7 @@ every time.**
 
 ```bash
 source venv/bin/activate      # Windows: venv\Scripts\activate
-pip install openai
+pip install openai duckduckgo-search
 export OPENAI_API_KEY='sk-...'
 ```
 
@@ -31,7 +31,8 @@ python memory_agent.py
 
 ## Lab 5.2 — Add memory + planning to your Module 4 agent
 
-Open `first_agent.py` from Module 4 and add a system prompt at the top of `run_agent`:
+Carry your Module 4 search agent into [`first_agent.py`](first_agent.py) and add a
+system prompt at the top of `run_agent`:
 
 ```python
 def run_agent(goal):
@@ -44,14 +45,21 @@ def run_agent(goal):
     # ... rest of the loop is unchanged ...
 ```
 
-Then run a multi-step goal:
+That one prompt turns a tool-caller into a planner. Run it:
+
+```bash
+python first_agent.py
+```
+
+The file ends with two multi-step goals:
 
 ```python
+run_agent("If one share of Apple stock costs 765 US Dollars, how much are 1287 shares worth?")
+
 run_agent(
-    "Search for the latest news about electric vehicles. "
-    "Then search for Tesla stock price. "
-    "Then calculate the value of 100 shares. "
-    "Finally, summarize everything in 3 bullet points."
+    "Research NVIDIA and Apple. Find what each company does. "
+    "Then tell me which one you would recommend researching further for a "
+    "portfolio and explain why."
 )
 ```
 

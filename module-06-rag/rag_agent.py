@@ -1,29 +1,62 @@
 # Module 6 · rag_agent.py
-# Install: pip install langchain langchain-openai langchain-chroma chromadb
+# Install: pip install openai chromadb
 # Set key: export OPENAI_API_KEY='sk-...'
-# Run:     python rag_agent.py
+# Run:     python3 rag_agent.py
+
+import os
+from openai import OpenAI
+import chromadb
+
+client = OpenAI()
+chroma = chromadb.Client()
+collection = chroma.get_or_create_collection("docs")
 
 # STEP 1 — Load
-from langchain.document_loaders import TextLoader
-loader = TextLoader("sample_doc.txt")
-documents = loader.load()
+with open("sample_doc.txt", "r") as f:
+    text = f.read()
 
 # STEP 2 — Chunk
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=20)
-chunks = splitter.split_documents(documents)
+def chunk_text(text, size=300, overlap=50):
+    chunks = []
+    start = 0
+    while start < len(text):
+        chunks.append(text[start:start + size])
+        start += size - overlap
+    return chunks
 
-# STEP 3 and 4 — Embed and Store
-from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma
-embeddings = OpenAIEmbeddings()
-vectorstore = Chroma.from_documents(chunks, embeddings)
+chunks = chunk_text(text)
+
+# STEPS 3 and 4 — Embed and Store
+for i, chunk in enumerate(chunks):
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=chunk
+    )
+    collection.add(
+        documents=[chunk],
+        embeddings=[response.data[0].embedding],
+        ids=[f"chunk_{i}"]
+    )
 
 # STEP 5 — Retrieve and Answer
-from langchain_openai import ChatOpenAI
-from langchain.chains import RetrievalQA
-llm = ChatOpenAI(model="gpt-4o")
-qa = RetrievalQA.from_chain_type(llm=llm, retriever=vectorstore.as_retriever())
+def ask(question):
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=question
+    )
+    results = collection.query(
+        query_embeddings=[response.data[0].embedding],
+        n_results=2
+    )
+    context = "\n".join(results["documents"][0])
+    answer = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "Answer using only the context provided."},
+            {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"}
+        ]
+    )
+    return answer.choices[0].message.content
 
 questions = [
     "How many days can employees work remotely?",
@@ -33,7 +66,6 @@ questions = [
 ]
 
 for q in questions:
-    result = qa.invoke({"query": q})
     print(f"Q: {q}")
-    print(f"A: {result['result']}")
+    print(f"A: {ask(q)}")
     print()
