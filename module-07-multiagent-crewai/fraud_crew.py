@@ -1,76 +1,80 @@
-# Module 7 · fraud_crew.py
-# Same structure as research_crew.py — only the roles, goals, and backstories change.
-# That is all it takes to turn a research crew into a domain specialist team.
-# Install: pip install crewai crewai-tools
+# fraud_crew.py — FinTech domain
+# Same search tool. Same structure. Different domain.
+# Install:  pip install crewai crewai-tools duckduckgo-search
+# Python:   3.11 required
+# Run:      python3 fraud_crew.py
 
 from crewai import Agent, Task, Crew, Process
-from crewai_tools import SerperDevTool
-import os
+from crewai.tools import tool
+from duckduckgo_search import DDGS
 
-os.environ['SERPER_API_KEY'] = 'your-serper-key'  # free at serper.dev
-search_tool = SerperDevTool()
+
+@tool('Search the web')
+def search_web(query: str) -> str:
+    """Search the web using DuckDuckGo and return results."""
+    with DDGS() as ddgs:
+        results = list(ddgs.text(query, max_results=5))
+    return '\n'.join([
+        f"Title: {r['title']}\nURL: {r['href']}\nSummary: {r['body']}"
+        for r in results
+    ])
+
 
 investigator = Agent(
-    role="Senior Fraud Investigator",
-    goal="Examine the case for fraud signals: timing, amounts, payees, and patterns",
+    role="Financial Fraud Investigator",
+    goal="Gather evidence of suspicious transaction patterns for {case}",
     backstory=(
-        "You have investigated over 10,000 fraud cases at a major bank. You notice the "
-        "details others overlook and you never jump to conclusions without evidence."
+        "You are a certified fraud examiner with 10 years at a major bank. "
+        "You trace transaction chains, identify anomalies, and document evidence. "
+        "You follow AML protocols and never speculate without data."
     ),
-    tools=[search_tool],
-    verbose=True,
+    tools=[search_web],
+    verbose=True
 )
 
 risk_analyst = Agent(
-    role="Risk Analyst",
-    goal="Score the overall risk and explain the reasoning clearly",
+    role="Financial Risk Analyst",
+    goal="Assess risk level and regulatory exposure for {case}",
     backstory=(
-        "You translate investigative findings into a defensible LOW / MEDIUM / HIGH "
-        "risk rating, always grounded in the evidence."
+        "You specialize in financial risk and regulatory compliance. "
+        "You translate investigative findings into risk scores and flags. "
+        "You know FINRA, AML, and SOX requirements in detail."
     ),
-    verbose=True,
+    verbose=True
 )
 
 report_writer = Agent(
-    role="Investigation Report Writer",
-    goal="Produce a clear, professional investigation report",
+    role="Compliance Report Writer",
+    goal="Produce a formal incident report for {case} ready for legal review",
     backstory=(
-        "You write reports that a compliance officer can act on immediately: findings, "
-        "risk level, and recommended next steps."
+        "You write regulatory documents for financial institutions. "
+        "Your reports are precise, structured, and defensible in court."
     ),
-    verbose=True,
+    verbose=True
 )
 
 investigation_task = Task(
-    description="Investigate this case for fraud signals: {case}",
-    expected_output="A list of specific risk signals found, each with a short justification.",
-    agent=investigator,
+    description="Investigate suspicious patterns for {case}. Document findings.",
+    expected_output="Evidence report with flagged transactions.",
+    agent=investigator
 )
-
 risk_task = Task(
-    description="Score the overall fraud risk for the case and justify it.",
-    expected_output="A risk level of LOW, MEDIUM, or HIGH with clear reasoning.",
-    agent=risk_analyst,
+    description="Assess risk and compliance exposure for {case}.",
+    expected_output="Risk assessment with regulatory flags.",
+    agent=risk_analyst
 )
-
 report_task = Task(
-    description="Write the final investigation report for: {case}",
-    expected_output="A professional report: summary, signals, risk level, recommended action.",
-    agent=report_writer,
+    description="Write a formal incident report for {case} for legal review.",
+    expected_output="Structured incident report for compliance review.",
+    agent=report_writer
 )
 
 crew = Crew(
     agents=[investigator, risk_analyst, report_writer],
     tasks=[investigation_task, risk_task, report_task],
     process=Process.sequential,
-    verbose=True,
+    verbose=True
 )
 
-if __name__ == "__main__":
-    result = crew.kickoff(
-        inputs={
-            "case": "A $9,800 wire transfer at 3:14am to a newly added overseas payee, "
-            "from an account that normally sees only small domestic purchases."
-        }
-    )
-    print(result.raw)
+result = crew.kickoff(inputs={"case": "suspicious wire transfers — Account 7723"})
+print(result.raw)

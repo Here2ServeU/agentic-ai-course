@@ -40,11 +40,11 @@ You are here to build the second kind.
 | 2 · Python Basics | [`module-02-python-basics`](module-02-python-basics/) | `basics.py` — variables, functions, lists, dicts |
 | 3 · Your First API Call | [`module-03-first-api-call`](module-03-first-api-call/) | `first_api_call.py` + 10 system prompts |
 | 4 · Your First Real Agent | [`module-04-first-real-agent`](module-04-first-real-agent/) | `first_agent.py` — the agent loop, 2 tools |
-| 5 · Memory & Multi-Step | [`module-05-memory-multistep`](module-05-memory-multistep/) | `memory_demo.py`, `memory_agent.py` |
+| 5 · Memory & Multi-Step | [`module-05-memory-multistep`](module-05-memory-multistep/) | `memory_agent.py`, `first_agent.py` |
 | 6 · RAG | [`module-06-rag`](module-06-rag/) | `rag_agent.py` — talk to your documents |
-| 7 · Multi-Agent (CrewAI) | [`module-07-multiagent-crewai`](module-07-multiagent-crewai/) | `research_crew.py`, `fraud_crew.py` |
-| 8 · Cloud Deployment | [`module-08-cloud-deployment`](module-08-cloud-deployment/) | `agent_api.py`, `Dockerfile` |
-| 9 · Observability | [`module-09-observability`](module-09-observability/) | logging, cost tracking, LangSmith |
+| 7 · Multi-Agent (CrewAI) | [`module-07-multiagent-crewai`](module-07-multiagent-crewai/) | `research_crew.py`, `fraud_crew.py` — DuckDuckGo, no API key |
+| 8 · Superpowers with MCP | [`module-08-mcp`](module-08-mcp/) | `weather_server.py`, `mcp_agent.py` |
+| 9 · Observability | [`module-09-observability`](module-09-observability/) | `langsmith_test.py`, `first_agent_with_search.py` |
 | 10 · Capstone | [`module-10-capstone`](module-10-capstone/) | the full deployed Fraud Investigation Agent |
 
 ---
@@ -76,7 +76,7 @@ deactivate
 
 ## Before you start (Module 1 setup)
 
-1. Install **Python 3.11+** from [python.org/downloads](https://www.python.org/downloads) — on Windows, check **"Add Python to PATH."**
+1. Install **Python 3.11** from [python.org/downloads](https://www.python.org/downloads) — on Windows, check **"Add Python to PATH."** Use **3.11 specifically**: Modules 7 and 8 (CrewAI and the MCP SDK) depend on `tiktoken`, which has no build for Python 3.12+.
 2. Install **VS Code** from [code.visualstudio.com](https://code.visualstudio.com).
 3. Create an **OpenAI API key** at [platform.openai.com](https://platform.openai.com). Save it somewhere safe.
 

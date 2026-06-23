@@ -1,22 +1,19 @@
-# Module 9 · first_agent.py with observability
-# The Module 4 agent plus the three things you add this module:
-#   logging, cost tracking, and LangSmith tracing.
-# Install: pip install openai duckduckgo-search
-# Set key: export OPENAI_API_KEY='sk-...'
+# Module 9 - Observable Agent
+# Install: pip install ddgs openai agents "langsmith[openai-agents]"
+# Set in terminal: OPENAI_API_KEY, LANGSMITH_TRACING, LANGSMITH_ENDPOINT,
+#                  LANGSMITH_API_KEY, LANGSMITH_PROJECT
+# Never put keys in this file.
 
 import os
 import json
 import logging
 import datetime
+import asyncio
 from openai import OpenAI
-from duckduckgo_search import DDGS
+from ddgs import DDGS
+from agents import set_trace_processors
+from langsmith.wrappers import OpenAIAgentsTracingProcessor
 
-# ── LangSmith tracing (set your real key in the environment) ──────────
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_API_KEY"] = "your-langsmith-key"
-os.environ["LANGCHAIN_PROJECT"] = "my-first-agent"
-
-# ── Logging ───────────────────────────────────────────────────────────
 logging.basicConfig(
     filename=f"agent_log_{datetime.date.today()}.txt",
     level=logging.INFO,
@@ -40,7 +37,7 @@ tools = [{
     "type": "function",
     "function": {
         "name": "calculate",
-        "description": "Evaluates a math expression.",
+        "description": "Evaluates a math expression. Only use real numbers. Never use variable names.",
         "parameters": {
             "type": "object",
             "properties": {"expression": {"type": "string"}},
@@ -63,10 +60,23 @@ tools = [{
 
 def run_agent(goal):
     logging.info(f"AGENT START - Goal: {goal}")
-    messages = [{"role": "user", "content": goal}]
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are a helpful research agent. "
+                "When a goal requires both a web search and a calculation, "
+                "always search first to get the real number, "
+                "then use that exact number in the calculation. "
+                "Never pass variable names or placeholders to the calculate tool."
+            )
+        },
+        {"role": "user", "content": goal}
+    ]
     total_tokens = 0
     while True:
-        response = client.chat.completions.create(model="gpt-4o", messages=messages, tools=tools)
+        response = client.chat.completions.create(
+            model="gpt-4o", messages=messages, tools=tools)
 
         tokens_used = response.usage.total_tokens
         total_tokens += tokens_used
@@ -88,4 +98,6 @@ def run_agent(goal):
             messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
 
 
-run_agent("What is the current price of Apple stock? Then calculate how much 500 shares are worth.")
+if __name__ == "__main__":
+    set_trace_processors([OpenAIAgentsTracingProcessor()])
+    run_agent("What is the current price of Apple stock? Then calculate how much 500 shares are worth.")

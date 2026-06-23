@@ -4,9 +4,9 @@
 # Run:     uvicorn capstone_agent:app --reload   ->  http://localhost:8000/docs
 # Keys (set in the environment, never in this file):
 #   export OPENAI_API_KEY='sk-...'
-#   export LANGCHAIN_TRACING_V2=true
-#   export LANGCHAIN_API_KEY='your-langsmith-key'
-#   export LANGCHAIN_PROJECT='capstone-fraud-agent'
+#   export LANGSMITH_TRACING=true
+#   export LANGSMITH_API_KEY='your-langsmith-key'
+#   export LANGSMITH_PROJECT='capstone-fraud-agent'
 
 import os
 import json
@@ -18,8 +18,8 @@ from pydantic import BaseModel
 from openai import OpenAI
 from duckduckgo_search import DDGS
 
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_PROJECT"] = "capstone-fraud-agent"
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_PROJECT"] = "capstone-fraud-agent"
 
 logging.basicConfig(
     filename=f"capstone_log_{datetime.date.today()}.txt",
